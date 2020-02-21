@@ -8,6 +8,8 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
@@ -80,10 +82,22 @@ public class Controller {
 	protected void openImage(ActionEvent event) throws InterruptedException {
 		// This method opens an image and display it using the GUI
 		// You should modify the logic so that it opens and displays a video
-		 capture = new VideoCapture(getImageFilename()); // open video file
-		 if (capture.isOpened()) { // open successfully
-		 createFrameGrabber();
-		 } 
+		// The following code was provided by the Oracle Java Docs for JFileChooser
+		JFileChooser chooser = new JFileChooser();
+	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+	        "jpg, gif, png & mp4", "jpg", "gif", "png", "mp4");
+	    chooser.setFileFilter(filter);
+	    int returnVal = chooser.showOpenDialog(null);
+	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	       System.out.println("You chose to open this file: " +
+	            chooser.getSelectedFile().getName());
+	    }
+	 	
+//		 capture = new VideoCapture(getImageFilename()); // open video file
+//		 if (capture.isOpened()) { // open successfully
+//		 createFrameGrabber();
+//		 } 
+	    
 		// You don't have to understand how mat2Image() works. 
 		// In short, it converts the image from the Mat format to the Image format
 		// The Mat format is used by the opencv library, and the Image format is used by JavaFX
@@ -91,39 +105,34 @@ public class Controller {
 	}
 	protected void createFrameGrabber() throws InterruptedException {
 		 if (capture != null && capture.isOpened()) { // the video must be open
-		 double framePerSecond = capture.get(Videoio.CAP_PROP_FPS);
-		 // create a runnable to fetch new frames periodically
-		 Runnable frameGrabber = new Runnable() {
-		 @Override
-		 public void run() {
-		 Mat frame = new Mat();
-		 if (capture.read(frame)) { // decode successfully
-		 Image im = Utilities.mat2Image(frame);
-		 Utilities.onFXThread(imageView.imageProperty(), im);
-		 double currentFrameNumber =
-		capture.get(Videoio.CAP_PROP_POS_FRAMES);
-		 double totalFrameCount =
-		capture.get(Videoio.CAP_PROP_FRAME_COUNT);
-		 slider.setValue(currentFrameNumber / totalFrameCount *
-		(slider.getMax() - slider.getMin()));
-		 } else { // reach the end of the video
-		 capture.set(Videoio.CAP_PROP_POS_FRAMES, 0);
-		 }
-		 }
-		 };
-		 // terminate the timer if it is running
-		 if (timer != null && !timer.isShutdown()) {
-		 timer.shutdown();
-		 timer.awaitTermination(Math.round(1000/framePerSecond),
-		TimeUnit.MILLISECONDS);
-		 }
-		 // run the frame grabber
-		 timer = Executors.newSingleThreadScheduledExecutor();
-		 timer.scheduleAtFixedRate(frameGrabber, 0,
-		Math.round(1000/framePerSecond), TimeUnit.MILLISECONDS);
+			 double framePerSecond = capture.get(Videoio.CAP_PROP_FPS);
+			 // create a runnable to fetch new frames periodically
+			 Runnable frameGrabber = new Runnable() {
+				 @Override
+				 public void run() {
+					 Mat frame = new Mat();
+					 if (capture.read(frame)) { // decode successfully
+						 Image im = Utilities.mat2Image(frame);
+						 Utilities.onFXThread(imageView.imageProperty(), im);
+						 double currentFrameNumber = capture.get(Videoio.CAP_PROP_POS_FRAMES);
+						 double totalFrameCount = capture.get(Videoio.CAP_PROP_FRAME_COUNT);
+						 slider.setValue(currentFrameNumber / totalFrameCount * (slider.getMax() - slider.getMin()));
+					 } 
+					 else { // reach the end of the video
+					 capture.set(Videoio.CAP_PROP_POS_FRAMES, 0);
+					 }
+				 }
+			 };
+			 // terminate the timer if it is running
+			 if (timer != null && !timer.isShutdown()) {
+				 timer.shutdown();
+				 timer.awaitTermination(Math.round(1000/framePerSecond), TimeUnit.MILLISECONDS);
+			 }
+			 // run the frame grabber
+			 timer = Executors.newSingleThreadScheduledExecutor();
+			 timer.scheduleAtFixedRate(frameGrabber, 0, Math.round(1000/framePerSecond), TimeUnit.MILLISECONDS);
 		 }
 		}
-
 	@FXML
 	protected void playImage(ActionEvent event) throws LineUnavailableException {
 		// This method "plays" the image opened by the user
