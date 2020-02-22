@@ -70,38 +70,43 @@ public class Controller {
 			freq[m] = freq[m+1] * Math.pow(2, -1.0/12.0); 
 		}
 	}
-	private String getImageFilename() {
-		// This method should return the filename of the image to be played
-		// You should insert your code here to allow user to select the file
-		return "resources/test.mp4";
-	}
+	// rajan: below function is commented out cuz we shouldnt need it, but i left it in just in case
+//	private String getImageFilename() {
+//		// This method should return the filename of the image to be played
+//		// You should insert your code here to allow user to select the file
+//		return "resources/test.mp4";
+//	}
 	@FXML
 	protected void openImage(ActionEvent event) throws InterruptedException {
 		// This method opens an image and display it using the GUI
 		// You should modify the logic so that it opens and displays a video
-		// The following code was provided by the Oracle Java Docs for JFileChooser
-//		JFileChooser chooser = new JFileChooser();
-//	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-//	        "jpg, gif, png & mp4", "jpg", "gif", "png", "mp4");
-//	    chooser.setFileFilter(filter);
-//	    int returnVal = chooser.showOpenDialog(null);
-//	    if(returnVal == JFileChooser.APPROVE_OPTION) {
-//	       System.out.println("You chose to open this file: " +
-//	            chooser.getSelectedFile().getName());
-//	    }
-		
-//		final String imageFilename = getImageFilename();
-//		image = Imgcodecs.imread(imageFilename);
-//		imageView.setImage(Utilities.mat2Image(image)); 
-		
-		 capture = new VideoCapture(getImageFilename()); // open video file
-		 if (capture.isOpened()) { // open successfully
-		 createFrameGrabber();
-		 } 
-		 else {
-			 System.out.println("Unable to open");
-		 }
+		// Rajan: The following code block was provided by the Oracle Java Docs for JFileChooser with slight modification
+	    JFileChooser chooser = new JFileChooser();
+	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+	        "jpg, gif, png, mp4", "jpg", "gif", "png", "mp4");
+	    chooser.setFileFilter(filter);
+	    int returnVal = chooser.showOpenDialog(null);
+	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	       System.out.println("You chose to open this file: " +
+	            chooser.getSelectedFile().getName());
+	    }
 	    
+	    String file = chooser.getSelectedFile().getName(); // rajan: name of video
+	    String filetype = file.substring(file.lastIndexOf("."),file.length()); // rajan: name of extension (.jpg, .mp4, etc.)
+
+	    // Rajan: ALL SELECTED FILES MUST BE IN RESOURCES FOLDER TO WORK!!!
+	    // rajan : below code decides whether picture is image or video. issue to fix later: are .gif files images or videos?
+	    if(filetype.equals(".mp4") || filetype.equals(".mov") || filetype.equals(".wav")) {
+			capture = new VideoCapture("resources/" + file); // open video file
+			if (capture.isOpened()) { // open successfully
+				createFrameGrabber();
+			} 
+	    }
+	    if(filetype.equals(".png") || filetype.equals(".jpg") || filetype.equals(".jpeg")) {
+			final String imageFilename = "resources/" + file;
+			image = Imgcodecs.imread(imageFilename);
+			imageView.setImage(Utilities.mat2Image(image)); 
+	    }
 		// You don't have to understand how mat2Image() works. 
 		// In short, it converts the image from the Mat format to the Image format
 		// The Mat format is used by the opencv library, and the Image format is used by JavaFX
@@ -110,6 +115,7 @@ public class Controller {
 
 	protected void createFrameGrabber() throws InterruptedException {
 		 if (capture != null && capture.isOpened()) { // the video must be open
+			 System.out.println("Video open"); // Rajan: Check if the video has been opened
 			 double framePerSecond = capture.get(Videoio.CAP_PROP_FPS);
 			 // create a runnable to fetch new frames periodically
 			 Runnable frameGrabber = new Runnable() {
