@@ -126,9 +126,9 @@ public class Controller {
 						 Image im = Utilities.mat2Image(frame);
 						 Utilities.onFXThread(imageView.imageProperty(), im);
 						 image = frame;
-						 double currentFrameNumber = capture.get(Videoio.CAP_PROP_POS_FRAMES);
-						 double totalFrameCount = capture.get(Videoio.CAP_PROP_FRAME_COUNT);
-						 slider.setValue(currentFrameNumber / totalFrameCount * (slider.getMax() - slider.getMin()));
+						 double currentFrameNumber = capture.get(Videoio.CAP_PROP_POS_FRAMES); // current frame number
+						 double totalFrameCount = capture.get(Videoio.CAP_PROP_FRAME_COUNT);   // total frame count
+						 slider.setValue(currentFrameNumber / totalFrameCount * (slider.getMax() - slider.getMin())); //this sets slider position
 					 } 
 					 else { // reach the end of the video
 						 System.out.println("Reached end of video");
@@ -138,6 +138,7 @@ public class Controller {
 			 };
 			 // terminate the timer if it is running
 			 if (timer != null && !timer.isShutdown()) {
+				 System.out.println("Shutdown");
 				 timer.shutdown();
 				 timer.awaitTermination(Math.round(1000/framePerSecond), TimeUnit.MILLISECONDS);
 			 }
@@ -175,22 +176,28 @@ public class Controller {
             SourceDataLine sourceDataLine = AudioSystem.getSourceDataLine(audioFormat);
             sourceDataLine.open(audioFormat, sampleRate);
             sourceDataLine.start();
-            
+            byte[] click = new byte[numberOfSamplesPerColumn];
             for (int col = 0; col < width; col++) {
             	byte[] audioBuffer = new byte[numberOfSamplesPerColumn];
             	for (int t = 1; t <= numberOfSamplesPerColumn; t++) {
             		double signal = 0;
+            		double clicksignal = 0;
                 	for (int row = 0; row < height; row++) {
                 		int m = height - row - 1; // Be sure you understand why it is height rather width, and why we subtract 1 
                 		int time = t + col * numberOfSamplesPerColumn;
                 		double ss = Math.sin(2 * Math.PI * freq[m] * (double)time/sampleRate);
+                		double clickss = Math.sin(2 * Math.PI * 60 * (double)time/sampleRate);
                 		signal += roundedImage[row][col] * ss;
+                		clicksignal += roundedImage[row][col] * clickss;
                 	}
                 	double normalizedSignal = signal / height; // signal: [-height, height];  normalizedSignal: [-1, 1]
                 	audioBuffer[t-1] = (byte) (normalizedSignal*0x7F); // Be sure you understand what the weird number 0x7F is for
+                	double normalizedclickSignal = clicksignal / height; 
+                	click[t-1] = (byte) (normalizedclickSignal*0x7F);
             	}
             	sourceDataLine.write(audioBuffer, 0, numberOfSamplesPerColumn);
             }
+            sourceDataLine.write(click, 0, numberOfSamplesPerColumn);
             sourceDataLine.drain();
             sourceDataLine.close();
 		} else {
