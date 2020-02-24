@@ -40,7 +40,7 @@ public class Controller {
 	private double[] freq; // frequencies for each particular row
 	private int numberOfQuantizionLevels;
 	private int numberOfSamplesPerColumn;
-	
+	@FXML
 	private Slider slider;
 	
 	private VideoCapture capture;
@@ -83,7 +83,7 @@ public class Controller {
 		// Rajan: The following code block was provided by the Oracle Java Docs for JFileChooser with slight modification
 	    JFileChooser chooser = new JFileChooser();
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-	        "jpg, gif, png, mp4", "jpg", "gif", "png", "mp4");
+	        "jpg, gif, png, mp4, mov, wav, jpeg", "jpg", "gif", "png", "mp4", "mov", "wav", "jpeg");
 	    chooser.setFileFilter(filter);
 	    int returnVal = chooser.showOpenDialog(null);
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -96,7 +96,7 @@ public class Controller {
 
 	    // Rajan: ALL SELECTED FILES MUST BE IN RESOURCES FOLDER TO WORK!!!
 	    // rajan : below code decides whether picture is image or video. issue to fix later: are .gif files images or videos?
-	    if(filetype.equals(".mp4") || filetype.equals(".mov") || filetype.equals(".wav")) {
+	    if(filetype.equals(".mp4") || filetype.equals(".mov") || filetype.equals(".wav") || filetype.equals(".gif")) {
 			capture = new VideoCapture("resources/" + file); // open video file
 			if (capture.isOpened()) { // open successfully
 				createFrameGrabber();
@@ -125,12 +125,14 @@ public class Controller {
 					 if (capture.read(frame)) { // decode successfully
 						 Image im = Utilities.mat2Image(frame);
 						 Utilities.onFXThread(imageView.imageProperty(), im);
+						 image = frame;
 						 double currentFrameNumber = capture.get(Videoio.CAP_PROP_POS_FRAMES);
 						 double totalFrameCount = capture.get(Videoio.CAP_PROP_FRAME_COUNT);
 						 slider.setValue(currentFrameNumber / totalFrameCount * (slider.getMax() - slider.getMin()));
 					 } 
 					 else { // reach the end of the video
-					 capture.set(Videoio.CAP_PROP_POS_FRAMES, 0);
+						 System.out.println("Reached end of video");
+						 capture.set(Videoio.CAP_PROP_POS_FRAMES, 0);
 					 }
 				 }
 			 };
@@ -151,6 +153,7 @@ public class Controller {
 		// This method "plays" the image opened by the user
 		// You should modify the logic so that it plays a video rather than an image
 		if (image != null) {
+			System.out.println("Image running");
 			// convert the image from RGB to grayscale
 			Mat grayImage = new Mat();
 			Imgproc.cvtColor(image, grayImage, Imgproc.COLOR_BGR2GRAY);
@@ -191,7 +194,7 @@ public class Controller {
             sourceDataLine.drain();
             sourceDataLine.close();
 		} else {
-			// What should you do here?
+			System.out.println("No selected image.");
 		}
 	} 
 }
