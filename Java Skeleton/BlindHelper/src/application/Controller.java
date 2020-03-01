@@ -1,35 +1,59 @@
 package application;
 
+import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Pattern;
 import java.util.concurrent.TimeUnit;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.AudioInputStream;
+
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
+import org.opencv.videoio.VideoCapture;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Slider;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.media.AudioClip;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.text.Text;
+import javafx.scene.control.Button;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
+import javafx.scene.media.Media;
+
+import javafx.util.Duration;
+import javafx.stage.FileChooser;
 import utilities.Utilities;
 
 public class Controller {
 	
 	@FXML
 	private ImageView imageView; // the image display window in the GUI
-	
+
 	private Mat image;
 	
 	private int width;
@@ -42,7 +66,8 @@ public class Controller {
 	private int numberOfSamplesPerColumn;
 	@FXML
 	private Slider slider;
-	
+	@FXML
+	private Slider volslider;
 	private VideoCapture capture;
 	private ScheduledExecutorService timer;
 	
@@ -69,6 +94,45 @@ public class Controller {
 		for (int m = height/2-2; m >=0; m--) {
 			freq[m] = freq[m+1] * Math.pow(2, -1.0/12.0); 
 		}
+		// rajan: volume controller
+		volslider.setValue(100);
+		volslider.valueProperty().addListener(new InvalidationListener() {
+			@Override
+			public void invalidated(Observable observable) {
+				Mixer.Info [] mix = AudioSystem.getMixerInfo();  
+				
+				for (Mixer.Info mixerInfo : mix){
+				    Mixer mixer = AudioSystem.getMixer(mixerInfo);
+				    Line.Info[] info2 = mixer.getTargetLineInfo();
+				    
+				    for (Line.Info info:info2){
+				        boolean open = true;  
+				        Line line = null;  
+				        
+				        try {
+				            line = mixer.getLine(info);  
+				            open = line.isOpen() || line instanceof Clip;
+				            if (!open)    
+				                line.open();
+				            FloatControl volCtrl = (FloatControl)line.getControl(FloatControl.Type.VOLUME);  
+				            volCtrl.setValue((float)volslider.getValue()/100);
+				        }  
+				        
+				        catch (LineUnavailableException e) {  
+				            e.printStackTrace();  
+				        }  
+				        catch (IllegalArgumentException iaEx) {  
+				        }  
+				        
+				        finally {  
+				            if (line != null && !open) 
+				                line.close();
+				        }  
+				    }
+				}
+			}
+
+		});
 	}
 	// rajan: below function is commented out cuz we shouldnt need it, but i left it in just in case
 //	private String getImageFilename() {
@@ -112,7 +176,10 @@ public class Controller {
 		// The Mat format is used by the opencv library, and the Image format is used by JavaFX
 		// BTW, you should be able to explain briefly what opencv and JavaFX are after finishing this assignment
 	}
-
+	private void playAudio() {
+		AudioClip note = new AudioClip(this.getClass().getResource("click.mp3").toString());
+		note.play();
+	}
 	protected void createFrameGrabber() throws InterruptedException {
 		 if (capture != null && capture.isOpened()) { // the video must be open
 			 System.out.println("Video open"); // Rajan: Check if the video has been opened
@@ -129,6 +196,9 @@ public class Controller {
 						 double currentFrameNumber = capture.get(Videoio.CAP_PROP_POS_FRAMES); // current frame number
 						 double totalFrameCount = capture.get(Videoio.CAP_PROP_FRAME_COUNT);   // total frame count
 						 slider.setValue(currentFrameNumber / totalFrameCount * (slider.getMax() - slider.getMin())); //this sets slider position
+//						 if(currentFrameNumber==10){
+//							 playAudio();
+//						 }
 					 } 
 					 else { // reach the end of the video
 						 System.out.println("Reached end of video");

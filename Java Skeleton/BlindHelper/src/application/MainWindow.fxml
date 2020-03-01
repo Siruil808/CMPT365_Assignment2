@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="447.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
    <bottom>
       <VBox prefHeight="111.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
@@ -50,7 +50,12 @@
             </ImageView>
             <Slider fx:id="slider">
                <VBox.margin>
-                  <Insets left="100.0" right="100.0" />
+                  <Insets right="200.0" />
+               </VBox.margin>
+            </Slider>
+            <Slider fx:id="volslider" layoutX="10.0" layoutY="300.0">
+               <VBox.margin>
+                  <Insets left="450.0" />
                </VBox.margin>
             </Slider>
          </children>
