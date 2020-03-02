@@ -55,7 +55,7 @@ public class Controller {
 	private ImageView imageView; // the image display window in the GUI
 
 	private Mat image;
-	
+	private int flag = 0;
 	private int width;
 	private int height;
 	private int sampleRate; // sampling frequency
@@ -176,9 +176,18 @@ public class Controller {
 		// The Mat format is used by the opencv library, and the Image format is used by JavaFX
 		// BTW, you should be able to explain briefly what opencv and JavaFX are after finishing this assignment
 	}
-	private void playAudio() {
-		AudioClip note = new AudioClip(this.getClass().getResource("click.mp3").toString());
-		note.play();
+	private void playAudio() { // rajan: this plays the click noise
+		File sound = new File("resources/click.wav");
+		try {
+			Clip click = AudioSystem.getClip();
+			click.open(AudioSystem.getAudioInputStream(sound));
+			click.start();
+				
+			Thread.sleep(click.getMicrosecondLength()/1000);
+		}
+		catch(Exception e) {
+				
+		}
 	}
 	protected void createFrameGrabber() throws InterruptedException {
 		 if (capture != null && capture.isOpened()) { // the video must be open
@@ -196,9 +205,11 @@ public class Controller {
 						 double currentFrameNumber = capture.get(Videoio.CAP_PROP_POS_FRAMES); // current frame number
 						 double totalFrameCount = capture.get(Videoio.CAP_PROP_FRAME_COUNT);   // total frame count
 						 slider.setValue(currentFrameNumber / totalFrameCount * (slider.getMax() - slider.getMin())); //this sets slider position
-//						 if(currentFrameNumber==10){
-//							 playAudio();
-//						 }
+						 if(currentFrameNumber%2==0){
+							 //System.out.println("Play");
+							 if (flag!=1)
+							 playAudio();
+						 }
 					 } 
 					 else { // reach the end of the video
 						 System.out.println("Reached end of video");
@@ -224,6 +235,7 @@ public class Controller {
 		// This method "plays" the image opened by the user
 		// You should modify the logic so that it plays a video rather than an image
 		if (image != null) {
+			flag = 1;			
 			System.out.println("Image running");
 			// convert the image from RGB to grayscale
 			Mat grayImage = new Mat();
@@ -246,30 +258,24 @@ public class Controller {
             SourceDataLine sourceDataLine = AudioSystem.getSourceDataLine(audioFormat);
             sourceDataLine.open(audioFormat, sampleRate);
             sourceDataLine.start();
-            byte[] click = new byte[numberOfSamplesPerColumn];
             for (int col = 0; col < width; col++) {
             	byte[] audioBuffer = new byte[numberOfSamplesPerColumn];
             	for (int t = 1; t <= numberOfSamplesPerColumn; t++) {
             		double signal = 0;
-            		double clicksignal = 0;
                 	for (int row = 0; row < height; row++) {
                 		int m = height - row - 1; // Be sure you understand why it is height rather width, and why we subtract 1 
                 		int time = t + col * numberOfSamplesPerColumn;
                 		double ss = Math.sin(2 * Math.PI * freq[m] * (double)time/sampleRate);
-                		double clickss = Math.sin(2 * Math.PI * 60 * (double)time/sampleRate);
                 		signal += roundedImage[row][col] * ss;
-                		clicksignal += roundedImage[row][col] * clickss;
                 	}
                 	double normalizedSignal = signal / height; // signal: [-height, height];  normalizedSignal: [-1, 1]
                 	audioBuffer[t-1] = (byte) (normalizedSignal*0x7F); // Be sure you understand what the weird number 0x7F is for
-                	double normalizedclickSignal = clicksignal / height; 
-                	click[t-1] = (byte) (normalizedclickSignal*0x7F);
             	}
             	sourceDataLine.write(audioBuffer, 0, numberOfSamplesPerColumn);
             }
-            sourceDataLine.write(click, 0, numberOfSamplesPerColumn);
             sourceDataLine.drain();
             sourceDataLine.close();
+            flag = 0;
 		} else {
 			System.out.println("No selected image.");
 		}
