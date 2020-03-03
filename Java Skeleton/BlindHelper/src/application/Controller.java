@@ -56,6 +56,7 @@ public class Controller {
 
 	private Mat image;
 	private int flag = 0;
+	private boolean pl = true;
 	private int width;
 	private int height;
 	private int sampleRate; // sampling frequency
@@ -68,6 +69,9 @@ public class Controller {
 	private Slider slider;
 	@FXML
 	private Slider volslider;
+	@FXML 
+	private Button pause;
+	
 	private VideoCapture capture;
 	private ScheduledExecutorService timer;
 	
@@ -84,6 +88,15 @@ public class Controller {
 		numberOfQuantizionLevels = 16;
 		
 		numberOfSamplesPerColumn = 500;
+		
+		volslider.setMin(0);
+		volslider.setMax(100);
+		volslider.setShowTickLabels(true);
+		volslider.setShowTickMarks(true);
+		volslider.setMajorTickUnit(50);
+		volslider.setMinorTickCount(5);
+		volslider.setBlockIncrement(10);
+		volslider.setValue(100);
 		
 		// assign frequencies for each particular row
 		freq = new double[height]; // Be sure you understand why it is height rather than width
@@ -199,27 +212,36 @@ public class Controller {
 				 public void run() {
 					 Mat frame = new Mat();
 					 if (capture.read(frame)) { // decode successfully
-						 Image im = Utilities.mat2Image(frame);
-						 Utilities.onFXThread(imageView.imageProperty(), im);
-						 image = frame;
-						 double currentFrameNumber = capture.get(Videoio.CAP_PROP_POS_FRAMES); // current frame number
-						 double totalFrameCount = capture.get(Videoio.CAP_PROP_FRAME_COUNT);   // total frame count
-						 slider.setValue(currentFrameNumber / totalFrameCount * (slider.getMax() - slider.getMin())); //this sets slider position
-						 if(currentFrameNumber%2==0){
-							 //System.out.println("Play");
-							 if (flag!=1)
-							 playAudio();
+						 if(pl) { // check if video is paused
+							 Image im = Utilities.mat2Image(frame);
+							 Utilities.onFXThread(imageView.imageProperty(), im);
+							 image = frame;
+							 double currentFrameNumber = capture.get(Videoio.CAP_PROP_POS_FRAMES); // current frame number
+							 double totalFrameCount = capture.get(Videoio.CAP_PROP_FRAME_COUNT);   // total frame count
+							 slider.setValue(currentFrameNumber / totalFrameCount * (slider.getMax() - slider.getMin())); //this sets slider position
+							 if(currentFrameNumber%2==0){
+								 if (flag!=1)
+								 playAudio();
+							 }
+						 }
+						 else {
+							 while(!pl) { //if paused, send into sleep loop
+								 try {
+									Thread.sleep(1);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							 }
 						 }
 					 } 
 					 else { // reach the end of the video
-						 System.out.println("Reached end of video");
 						 capture.set(Videoio.CAP_PROP_POS_FRAMES, 0);
 					 }
 				 }
 			 };
 			 // terminate the timer if it is running
 			 if (timer != null && !timer.isShutdown()) {
-				 System.out.println("Shutdown");
 				 timer.shutdown();
 				 timer.awaitTermination(Math.round(1000/framePerSecond), TimeUnit.MILLISECONDS);
 			 }
@@ -228,7 +250,16 @@ public class Controller {
 			 timer.scheduleAtFixedRate(frameGrabber, 0, Math.round(1000/framePerSecond), TimeUnit.MILLISECONDS);
 		 }
 		}
-
+	@FXML
+	protected void pause(ActionEvent event) throws InterruptedException{ // pause/play feature
+		if(pl) {
+		pause.setText("Play");
+		}
+		if(!pl) {
+			pause.setText("Pause");
+		}
+		pl = !pl;
+	}
 
 	@FXML
 	protected void playImage(ActionEvent event) throws LineUnavailableException {
@@ -236,7 +267,6 @@ public class Controller {
 		// You should modify the logic so that it plays a video rather than an image
 		if (image != null) {
 			flag = 1;			
-			System.out.println("Image running");
 			// convert the image from RGB to grayscale
 			Mat grayImage = new Mat();
 			Imgproc.cvtColor(image, grayImage, Imgproc.COLOR_BGR2GRAY);

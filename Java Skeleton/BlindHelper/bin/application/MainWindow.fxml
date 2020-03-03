@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -14,27 +16,46 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="447.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
+   <top>
+      <VBox style="-fx-background-color: #666666; ">
+         <children>
+            <Text fill="#971c1c" strokeType="OUTSIDE" text="Assignment 2" textAlignment="CENTER" BorderPane.alignment="CENTER">
+               <VBox.margin>
+                  <Insets left="250.0" />
+               </VBox.margin>
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Text>
+         </children>
+      </VBox>   
+   </top>
    <bottom>
-      <VBox prefHeight="111.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+      <VBox prefHeight="150.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
             <HBox prefHeight="68.0" prefWidth="600.0">
                <children>
                   <Button mnemonicParsing="false" onAction="#openImage" prefHeight="40.0" prefWidth="100.0" text="Open">
                      <HBox.margin>
-                        <Insets left="150.0" top="20.0" />
+                        <Insets left="100.0" />
                      </HBox.margin>
                   </Button>
-                  <Button mnemonicParsing="false" onAction="#playImage" prefHeight="40.0" prefWidth="100.0" text="Play">
+                  <Button mnemonicParsing="false" onAction="#playImage" prefHeight="40.0" prefWidth="100.0" text="Play Sound">
                      <HBox.margin>
-                        <Insets left="100.0" top="20.0" />
+                        <Insets left="55.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="pause" mnemonicParsing="false" onAction="#pause" prefHeight="40.0" prefWidth="100.0" text="Pause">
+                     <HBox.margin>
+                        <Insets left="55.0" />
                      </HBox.margin>
                   </Button>
                </children>
             </HBox>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="CMPT 365 | Simon Fraser University | May 2017&#10;Mark Drew (mark@cs.sfu.ca) | Chen Song (csa102@sfu.ca)" textAlignment="CENTER" wrappingWidth="456.638671875">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="CMPT 365 | Simon Fraser University | March 2020&#10;Rajan | Ary" textAlignment="CENTER" wrappingWidth="456.638671875">
                <VBox.margin>
-                  <Insets left="50.0" />
+                  <Insets left="60.0" top=".0" />
                </VBox.margin>
             </Text>
          </children>
@@ -43,22 +64,38 @@
    <center>
       <VBox>
          <children>
-            <ImageView fx:id="imageView" fitHeight="263.0" fitWidth="421.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER">
+            <ImageView fx:id="imageView" fitHeight="270.0" fitWidth="421.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER">
                <VBox.margin>
-                  <Insets left="90.0" top="10.0" />
+                  <Insets left="400.0" top="20.0" />
                </VBox.margin>
             </ImageView>
-            <Slider fx:id="slider">
+            <Slider fx:id="slider" layoutX="10.0" layoutY="300.0">
                <VBox.margin>
-                  <Insets right="200.0" />
-               </VBox.margin>
-            </Slider>
-            <Slider fx:id="volslider" layoutX="10.0" layoutY="300.0">
-               <VBox.margin>
-                  <Insets left="450.0" />
+                  <Insets left="430.0" />
                </VBox.margin>
             </Slider>
          </children>
       </VBox>
    </center>
+   <right>
+      <VBox fx:id="colorBox">
+         <children>
+            <Text text="Volume">
+               <VBox.margin>
+                  <Insets left="450.0" />
+               </VBox.margin>
+            </Text>
+            <Slider fx:id="volslider">
+               <VBox.margin>
+                  <Insets left="410.0" top="10.0" />
+               </VBox.margin>
+            </Slider>
+            <ImageView fx:id="image1" fitHeight="42.0" fitWidth="52.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER">
+               <VBox.margin>
+                  <Insets left="420.0" top="60.0" />
+               </VBox.margin>
+            </ImageView>
+         </children>
+      </VBox>   
+   </right>
 </BorderPane>
