@@ -44,7 +44,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.media.Media;
-
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import javafx.stage.FileChooser;
 import utilities.Utilities;
@@ -68,10 +69,12 @@ public class Controller {
 	@FXML
 	private Slider slider;
 	@FXML
+	private Slider speedslider;
+	@FXML
 	private Slider volslider;
 	@FXML 
 	private Button pause;
-	
+	private MediaPlayer mediaPlayer;
 	private VideoCapture capture;
 	private ScheduledExecutorService timer;
 	
@@ -97,6 +100,15 @@ public class Controller {
 		volslider.setMinorTickCount(5);
 		volslider.setBlockIncrement(10);
 		volslider.setValue(100);
+		
+		speedslider.setMin(0.5);
+		speedslider.setMax(2);
+		speedslider.setShowTickLabels(true);
+		speedslider.setShowTickMarks(true);
+		speedslider.setMajorTickUnit(0.5);
+		speedslider.setMinorTickCount(5);
+		speedslider.setBlockIncrement(0.5);
+		speedslider.setValue(1);
 		
 		// assign frequencies for each particular row
 		freq = new double[height]; // Be sure you understand why it is height rather than width
@@ -146,6 +158,22 @@ public class Controller {
 			}
 
 		});
+        speedslider.valueProperty().addListener(new InvalidationListener()
+        {
+        	private double speed1 = 1.0;
+            @Override
+            public void invalidated(Observable ov) 
+            {
+                if (speedslider.isValueChanging()) 
+                {
+                    double currentSpeed = Math.round( (int) (speedslider.getValue()*100) )/100.0;
+                    	if (currentSpeed != speed1) {
+                    		speed1 = currentSpeed;
+                    		mediaPlayer.setRate(currentSpeed);
+                    	}
+                }
+            }
+        });
 	}
 	// rajan: below function is commented out cuz we shouldnt need it, but i left it in just in case
 //	private String getImageFilename() {
