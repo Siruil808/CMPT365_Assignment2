@@ -64,7 +64,7 @@
    <center>
       <VBox>
          <children>
-            <ImageView fx:id="imageView" fitHeight="270.0" fitWidth="421.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" style="-fx-effect: dropshadow(three-pass-box, black, 30, 0.5, 0, 0;">
+            <ImageView fx:id="imageView" fitHeight="270.0" fitWidth="421.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" style="-fx-effect: dropshadow(three-pass-box, black, 30, 0.5, 0, 0)">
                <VBox.margin>
                   <Insets left="20.0" top="20.0" />
                </VBox.margin>
@@ -78,7 +78,7 @@
       </VBox>
    </center>
    <right>
-      <VBox fx:id="colorBox" style="-fx-background-color: #989898;  ">
+      <VBox style="-fx-background-color: #989898;  ">
          <children>
             <Text text="Volume" strokeType="OUTSIDE" strokeWidth="3.0">
                <VBox.margin>
@@ -90,11 +90,16 @@
                   <Insets left="10.0" top="10.0" />
                </VBox.margin>
             </Slider>
-            <ImageView fitHeight="20.0" fitWidth="25.0" preserveRatio="true" BorderPane.alignment="CENTER">
+            <Text text="Speed" strokeType="OUTSIDE" strokeWidth="3.0">
                <VBox.margin>
-                  <Insets left="20.0" top="20.0" />
+                  <Insets left="10.0" top="10.0" />
                </VBox.margin>
-            </ImageView>
+            </Text>
+            <Slider fx:id="speedslider">
+               <VBox.margin>
+                  <Insets left="10.0" top="10.0" />
+               </VBox.margin>
+            </Slider>
          </children>
       </VBox>   
    </right>
